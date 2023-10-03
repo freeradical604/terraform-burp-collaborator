@@ -6,3 +6,4 @@ inventory
 burp*
 intermediate.crt
 collaborator.config
+.terraform*
