@@ -8,7 +8,7 @@ data "aws_ami" "ubuntu" {
 
   filter {
     name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-*"]
+    values = ["ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"]
   }
 
   filter {
@@ -29,17 +29,89 @@ resource "aws_instance" "collaborator" {
   instance_type = "${var.instance_type}"
   key_name = "${aws_key_pair.key.key_name}"
 
-  tags {
-    Name = "${var.server_name}"
-  }
-
   security_groups = [
     "${aws_security_group.collaborator_sg.name}"
   ]
 
-  provisioner "local-exec" {
-    command = "sleep 30 && ansible-galaxy install -r requirements.yml && echo \"[collaborator]\n${aws_instance.collaborator.public_ip} ansible_connection=ssh ansible_ssh_user=ubuntu ansible_ssh_private_key_file=${var.key_name}\" > inventory && ANSIBLE_HOST_KEY_CHECKING=false ansible-playbook -i inventory playbook.yml --extra-vars \"server_hostname=${var.server_name} burp_server_domain=${var.burp_zone}.${var.zone} burp_local_address=${aws_instance.collaborator.private_ip} burp_public_address=${aws_instance.collaborator.public_ip}\""
+
+provisioner "file" {
+    source      = "rules.v4"
+    destination = "/tmp/rules.v4"
   }
+provisioner "file" {
+    source      = "10periodic"
+    destination = "/tmp/10periodic"
+  }
+provisioner "file" {
+    source      = "50unattended-upgrades"
+    destination = "/tmp/50unattended-upgrades"
+  }
+
+#provisioner "file" {
+#    source      = "install_splunk.sh"
+#    destination = "/tmp/install_splunk.sh"
+#  }
+
+  provisioner "local-exec" {
+    command = "sleep 45 && ansible-galaxy install -r requirements.yml && echo \"[collaborator]\n${aws_instance.collaborator.public_ip} ansible_connection=ssh ansible_ssh_user=ubuntu ansible_ssh_private_key_file=${var.key_name}\" > inventory && ANSIBLE_HOST_KEY_CHECKING=false ansible-playbook -i inventory playbook.yml --extra-vars \"server_hostname=${var.server_name} burp_server_domain=${var.burp_zone}.${var.zone} burp_local_address=${aws_instance.collaborator.private_ip} burp_public_address=${aws_instance.collaborator.public_ip}\""
+  }
+
+
+provisioner "file" {
+    source      = "50unattended-upgrades"
+    destination = "/tmp/50unattended-upgrades"
+  }
+
+provisioner "file" {
+    source      = "burp.pk1-valid"
+    destination = "/tmp/burp.pk1"
+  }
+
+provisioner "file" {
+    source      = "burp.crt-valid"
+    destination = "/tmp/burp.crt"
+  }
+
+provisioner "file" {
+    source      = "burp_issuer.pem-valid"
+    destination = "/tmp/burp_issuer.pem"
+  }
+
+ provisioner "remote-exec" {
+    inline = [
+      "sudo apt-get update -y",   # Update package lists (for Ubuntu/Debian)
+      "sudo apt-get install -y openjdk-19-jre",   # Install Java JRE 17 (for Ubuntu/Debian)
+      "echo iptables-persistent iptables-persistent/autosave_v4 boolean true | sudo debconf-set-selections",
+      "echo iptables-persistent iptables-persistent/autosave_v6 boolean true | sudo debconf-set-selections",
+      "sudo apt-get install -y iptables-persistent",   
+      "sudo cp /tmp/rules.v4 /etc/iptables/rules.v4",
+      "sudo systemctl restart iptables",
+      "sudo openssl pkcs8 -topk8 -inform PEM -outform PEM -in /tmp/burp.pk1 -out /etc/burp/burp.pk8 -nocrypt",
+      "sudo cp /tmp/burp.crt /etc/burp/burp.crt",
+      "sudo cp /tmp/burp_issuer.pem /etc/burp/intermediate.crt",
+#      "sudo rm /tmp/burp.pk1",
+      "sudo systemctl stop burp",
+      "sudo systemctl enable burp",
+      "sudo systemctl start burp",
+      "sudo apt-get install unattended-upgrades",
+      "sudo cp /tmp/10periodic /etc/apt/apt.conf.d/10periodic",
+      "sudo cp /tmp/50unattended-upgrades /etc/apt/apt.conf.d/50unattended-upgrades",
+#      "sudo chmod +x /tmp/install_splunk.sh",
+#      "sudo /tmp/install_splunk.sh",
+#      "sudo sed 's/s \"0\"/s \"1\"/' /etc/apt/apt.conf.d/10periodic",
+#      "sudo sed 's/l \"0\"/l \"7\"/' /etc/apt/apt.conf.d/10periodic",
+#      "sudo echo 'APT::Periodic::Unattended-Upgrade \"1\";' >> /etc/apt/apt.conf.d/10periodic",
+#      "sudo sed 's/\\/\\/        \"$\{distro_id\}:$\{distro_codename\}-updates/       \"$\{distro_id\}:$\{distro_codename\}-updates/g' /etc/apt/apt.conf.d/50unattended-upgrades",
+    ]
+  }
+
+  connection {
+    type        = "ssh"
+    host        = "${aws_instance.collaborator.public_ip}"
+    user        = "ubuntu"
+    private_key = file("burpkeypair")  # Adjust the path to your private key
+  }
+
 }
 
 resource "aws_security_group" "collaborator_sg" {
@@ -67,6 +139,14 @@ resource "aws_security_group" "collaborator_sg" {
     from_port = 53
     to_port = 53
     protocol = "udp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  # DNS
+  ingress {
+    from_port = 53
+    to_port = 53
+    protocol = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
@@ -115,6 +195,14 @@ resource "aws_security_group" "collaborator_sg" {
     from_port = 9443
     to_port = 9443
     protocol = "tcp"
+    cidr_blocks = ["54.70.141.160/32", "76.130.50.150/32"]
+  }
+
+  # splunk forwarder
+  ingress {
+    from_port = 8089
+    to_port = 8089
+    protocol = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
@@ -139,9 +227,10 @@ resource "aws_route53_record" "a" {
 }
 
 resource "aws_route53_record" "ns" {
-  zone_id = "${data.aws_route53_zone.burp.zone_id}"
-  name    = "${var.burp_zone}.${var.zone}"
-  type    = "NS"
-  ttl     = "5"
+ depends_on = [aws_route53_record.a] 
+ zone_id = "${data.aws_route53_zone.burp.zone_id}"
+ name    = "${var.burp_zone}.${var.zone}"
+ type    = "NS"
+ ttl     = "5"
   records = ["${var.burp_zone}.${var.zone}."]
 }

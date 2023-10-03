@@ -3,8 +3,8 @@
   become: yes
   gather_facts: False
   pre_tasks:
-    - name: Burp | Install Python 2
-      raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
+    - name: Burp | Install Python 3
+      raw: test -e /usr/bin/python || (apt -y update && apt install -y python3-minimal)
 
     - name: Burp | Set hostname
       hostname:
@@ -20,4 +20,4 @@
         mode: 0644
 
   roles:
-    - { role: 4ARMED.burp-collaborator }
+    - { role: freeradical604.ansible_burp_collaborator }

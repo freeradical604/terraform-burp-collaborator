@@ -1,2 +1,3 @@
 # Install Ansible Galaxy roles
-- src: 4ARMED.burp-collaborator
+- src: 4ARMED.java8
+- src: freeradical604.ansible_burp_collaborator

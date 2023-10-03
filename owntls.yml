@@ -2,12 +2,12 @@
 - hosts: all
   vars:
     - generate_self_signed_certs: false
-    - country: GB
-    - state: Your state
-    - locality: Your locality
-    - organisation: Your Organisation
-    - organisational_unit: Your OU
-    - burp_server_domain: collaborator.example.com
+    - country: US
+    - state: CA
+    - locality: city
+    - organisation: org
+    - organisational_unit: OU
+    - burp_server_domain: collab.portsmine.com
 
   roles:
     - { role: 4ARMED.burp-collaborator }
