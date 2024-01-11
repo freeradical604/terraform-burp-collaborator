@@ -19,6 +19,10 @@ data "aws_ami" "ubuntu" {
   owners = ["099720109477"] # Canonical
 }
 
+resource "aws_ebs_encryption_by_default" "burp" {
+  enabled = true
+}
+
 resource "aws_key_pair" "key" {
   key_name = "${var.key_name}"
   public_key = "${file("${var.key_name}.pub")}"
