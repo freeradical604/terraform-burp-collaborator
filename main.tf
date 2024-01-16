@@ -93,10 +93,10 @@ provisioner "file" {
       "sudo openssl pkcs8 -topk8 -inform PEM -outform PEM -in /tmp/burp.pk1 -out /etc/burp/burp.pk8 -nocrypt",
       "sudo cp /tmp/burp.crt /etc/burp/burp.crt",
       "sudo cp /tmp/burp_issuer.pem /etc/burp/intermediate.crt",
-      "sudo adduser --shell /bin/nologin --no-create-home --system collaborator
+      "sudo adduser --shell /bin/nologin --no-create-home --system collaborator",
       "sudo rm /tmp/burp*",
-      "sudo chown collaborator /etc/burp:
-      "sudo chown collaborator /usr/share/burp"
+      "sudo chown collaborator /etc/burp",
+      "sudo chown collaborator /usr/share/burp",
       "sudo systemctl stop burp",
       "sudo systemctl enable burp",
       "sudo systemctl start burp",
