@@ -117,7 +117,7 @@ burp_zone = "collaborator" # This will result in collaborator.4armed.net
 permitted_ssh_cidr_block = "0.0.0.0/0"
 ```
 
-### Run Terraform
+### Run Terraform 
 
 Now we're ready to run Terraform. First verify everything is ok by running plan:
 
