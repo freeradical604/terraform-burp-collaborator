@@ -1,9 +1,9 @@
 burpsuite_pro_v*.jar
 terraform.tfstate*
-tls/burp.*
 burpkeypair*
-inventory
 burp*
+inventory
+.DS_Store
 intermediate.crt
 collaborator.config
 .terraform*
