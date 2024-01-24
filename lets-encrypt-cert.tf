@@ -4,7 +4,7 @@ provider "acme" {
 }
 
 data "aws_route53_zone" "base_domain" {
-  name = "portsmine.com" # TODO put your own DNS in here!
+  name = "asdfj.click" # TODO put your own DNS in here!
 }
 
 resource "tls_private_key" "private_key" {
@@ -13,7 +13,7 @@ resource "tls_private_key" "private_key" {
 
 resource "acme_registration" "registration" {
   account_key_pem = tls_private_key.private_key.private_key_pem
-  email_address   = "null@portsmine.com" # TODO put your own email in here!
+  email_address   = "null@asdfj.click" # TODO put your own email in here!
 }
 
 

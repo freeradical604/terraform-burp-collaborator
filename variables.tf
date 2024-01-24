@@ -49,7 +49,7 @@ variable "name" {
 variable "domains" {
   description = "Domain names to apply. The first domain provided will be the subject CN of the certificate, and all domains will be Subject Alternative Names on the certificate."
   type        = list(string)
-  default     = ["collab.portsmine.com", "*.collab.portsmine.com"]
+  default     = ["collab.asdfj.click", "*.collab.asdfj.click"]
 }
 
 variable "email_address" {

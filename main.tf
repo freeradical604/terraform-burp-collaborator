@@ -105,10 +105,6 @@ provisioner "file" {
       "sudo cp /tmp/50unattended-upgrades /etc/apt/apt.conf.d/50unattended-upgrades",
 #      "sudo chmod +x /tmp/install_splunk.sh",
 #      "sudo /tmp/install_splunk.sh",
-#      "sudo sed 's/s \"0\"/s \"1\"/' /etc/apt/apt.conf.d/10periodic",
-#      "sudo sed 's/l \"0\"/l \"7\"/' /etc/apt/apt.conf.d/10periodic",
-#      "sudo echo 'APT::Periodic::Unattended-Upgrade \"1\";' >> /etc/apt/apt.conf.d/10periodic",
-#      "sudo sed 's/\\/\\/        \"$\{distro_id\}:$\{distro_codename\}-updates/       \"$\{distro_id\}:$\{distro_codename\}-updates/g' /etc/apt/apt.conf.d/50unattended-upgrades",
     ]
   }
 
