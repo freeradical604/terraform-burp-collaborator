@@ -1,4 +1,5 @@
 # Install Ansible Galaxy roles
-#- src: geerlingguy.java
-- src: freeradical604.ansible-java21
-- src: freeradical604.ansible_burp_collaborator
+- src: https://github.com/freeradical604/ansible-java21
+  version: "master"
+- src: https://github.com/freeradical604/ansible-burp-collaborator
+  version: "master"

@@ -20,4 +20,4 @@
         mode: 0644
 
   roles:
-    - { role: freeradical604.ansible_burp_collaborator }
+    - { role: ansible-burp-collaborator }
