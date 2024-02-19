@@ -232,7 +232,7 @@ resource "aws_route53_record" "a" {
   zone_id = "${data.aws_route53_zone.burp.zone_id}"
   name    = "${var.burp_zone}.${var.zone}"
   type    = "A"
-  ttl     = "5"
+  ttl     = "60"
   #records = ["${data.aws_eip.collaborator.public_ip}"]
   records = ["${aws_instance.collaborator.public_ip}"]
 }
@@ -242,6 +242,6 @@ resource "aws_route53_record" "ns" {
  zone_id = "${data.aws_route53_zone.burp.zone_id}"
  name    = "${var.burp_zone}.${var.zone}"
  type    = "NS"
- ttl     = "5"
+ ttl     = "60"
   records = ["${var.burp_zone}.${var.zone}."]
 }
