@@ -28,6 +28,15 @@ resource "aws_key_pair" "key" {
   public_key = "${file("${var.key_name}.pub")}"
 }
 
+data "aws_eip" "collaborator" {
+  public_ip = "54.212.9.21"
+}
+
+resource "aws_eip_association" "collaborator" {
+  instance_id   = aws_instance.collaborator.id
+  allocation_id = data.aws_eip.collaborator.id
+}
+
 resource "aws_instance" "collaborator" {
   ami = "${data.aws_ami.ubuntu.id}"
   instance_type = "${var.instance_type}"
@@ -36,7 +45,6 @@ resource "aws_instance" "collaborator" {
   security_groups = [
     "${aws_security_group.collaborator_sg.name}"
   ]
-
 
 provisioner "file" {
     source      = "rules.v4"
@@ -57,7 +65,7 @@ provisioner "file" {
 #  }
 
   provisioner "local-exec" {
-    command = "sleep 45 && ansible-galaxy install -r requirements.yml && echo \"[collaborator]\n${aws_instance.collaborator.public_ip} ansible_connection=ssh ansible_ssh_user=ubuntu ansible_ssh_private_key_file=${var.key_name}\" > inventory && ANSIBLE_HOST_KEY_CHECKING=false ansible-playbook -i inventory playbook.yml --extra-vars \"server_hostname=${var.server_name} burp_server_domain=${var.burp_zone}.${var.zone} burp_local_address=${aws_instance.collaborator.private_ip} burp_public_address=${aws_instance.collaborator.public_ip}\""
+    command = "sleep 45 && ansible-galaxy install -r requirements.yml && echo \"[collaborator]\n${aws_instance.collaborator.public_ip} ansible_connection=ssh ansible_ssh_user=ubuntu ansible_ssh_private_key_file=${var.key_name}\" > inventory && ANSIBLE_HOST_KEY_CHECKING=false ansible-playbook -i inventory playbook.yml --extra-vars \"server_hostname=${var.server_name} burp_server_domain=${var.burp_zone}.${var.zone} burp_local_address=${aws_instance.collaborator.private_ip} burp_public_address=${data.aws_eip.collaborator.public_ip}\""
   }
 
 
@@ -84,7 +92,6 @@ provisioner "file" {
  provisioner "remote-exec" {
     inline = [
       "sudo apt-get update -y",   # Update package lists (for Ubuntu/Debian)
-      "sudo apt-get install -y openjdk-19-jre",   # Install Java JRE 17 (for Ubuntu/Debian)
       "echo iptables-persistent iptables-persistent/autosave_v4 boolean true | sudo debconf-set-selections",
       "echo iptables-persistent iptables-persistent/autosave_v6 boolean true | sudo debconf-set-selections",
       "sudo apt-get install -y iptables-persistent",   
@@ -226,6 +233,7 @@ resource "aws_route53_record" "a" {
   name    = "${var.burp_zone}.${var.zone}"
   type    = "A"
   ttl     = "5"
+  #records = ["${data.aws_eip.collaborator.public_ip}"]
   records = ["${aws_instance.collaborator.public_ip}"]
 }
 
