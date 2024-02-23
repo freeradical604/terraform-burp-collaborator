@@ -29,7 +29,7 @@ resource "aws_key_pair" "key" {
 }
 
 data "aws_eip" "collaborator" {
-  public_ip = "54.212.9.21"
+  public_ip = "54.212.9.20"
 }
 
 resource "aws_eip_association" "collaborator" {
@@ -41,6 +41,7 @@ resource "aws_instance" "collaborator" {
   ami = "${data.aws_ami.ubuntu.id}"
   instance_type = "${var.instance_type}"
   key_name = "${aws_key_pair.key.key_name}"
+  tags = { "Name" = "collab name" }
 
   security_groups = [
     "${aws_security_group.collaborator_sg.name}"
@@ -127,6 +128,8 @@ provisioner "file" {
 resource "aws_security_group" "collaborator_sg" {
   name = "collaborator-sg"
   description = "Allow access to Burp Collaborator services"
+  tags = { "Name" = "SG name" }
+
 
   # SSH
   ingress {
