@@ -1,7 +1,7 @@
 region = "us-west-2"
 profile = "default"
 availability_zone = "us-west-2a"
-instance_type = "t2.nano"
+instance_type = "t4g.nano"
 key_name = "burpkeypair"
 server_name = "burp" # used to set the hostname on the linux box
 zone = "asdfj.click"

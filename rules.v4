@@ -4,14 +4,14 @@
 :INPUT ACCEPT [0:0]
 :OUTPUT ACCEPT [0:0]
 :POSTROUTING ACCEPT [0:0]
--A PREROUTING -i eth0 -p tcp -m tcp --dport 80 -j REDIRECT --to-ports 3380
--A PREROUTING -i eth0 -p tcp -m tcp --dport 25 -j REDIRECT --to-ports 3325
--A PREROUTING -i eth0 -p tcp -m tcp --dport 587 -j REDIRECT --to-ports 33587
--A PREROUTING -i eth0 -p tcp -m tcp --dport 465 -j REDIRECT --to-ports 33465
--A PREROUTING -i eth0 -p tcp -m tcp --dport 9090 -j REDIRECT --to-ports 39090
--A PREROUTING -i eth0 -p tcp -m tcp --dport 9443 -j REDIRECT --to-ports 39443
--A PREROUTING -i eth0 -p tcp -m tcp --dport 443 -j REDIRECT --to-ports 33443
--A PREROUTING -i eth0 -p tcp -m tcp --dport 53 -j REDIRECT --to-ports 3353
--A PREROUTING -i eth0 -p udp -m udp --dport 53 -j REDIRECT --to-ports 3353
+-A PREROUTING -i ens5 -p tcp -m tcp --dport 80 -j REDIRECT --to-ports 3380
+-A PREROUTING -i ens5 -p tcp -m tcp --dport 25 -j REDIRECT --to-ports 3325
+-A PREROUTING -i ens5 -p tcp -m tcp --dport 587 -j REDIRECT --to-ports 33587
+-A PREROUTING -i ens5 -p tcp -m tcp --dport 465 -j REDIRECT --to-ports 33465
+-A PREROUTING -i ens5 -p tcp -m tcp --dport 9090 -j REDIRECT --to-ports 39090
+-A PREROUTING -i ens5 -p tcp -m tcp --dport 9443 -j REDIRECT --to-ports 39443
+-A PREROUTING -i ens5 -p tcp -m tcp --dport 443 -j REDIRECT --to-ports 33443
+-A PREROUTING -i ens5 -p tcp -m tcp --dport 53 -j REDIRECT --to-ports 3353
+-A PREROUTING -i ens5 -p udp -m udp --dport 53 -j REDIRECT --to-ports 3353
 COMMIT
 # Completed on Wed Aug 23 06:27:32 2023

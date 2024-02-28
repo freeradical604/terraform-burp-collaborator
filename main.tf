@@ -3,20 +3,19 @@ provider "aws" {
   profile = "${var.profile}"
 }
 
-data "aws_ami" "ubuntu" {
+data "aws_ami" "ubuntu22" {
   most_recent = true
-
+  owners      = ["amazon"]
+  
   filter {
     name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"]
+    values = ["ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-*"]
   }
 
   filter {
     name   = "virtualization-type"
     values = ["hvm"]
   }
-
-  owners = ["099720109477"] # Canonical
 }
 
 resource "aws_ebs_encryption_by_default" "burp" {
@@ -38,7 +37,9 @@ resource "aws_eip_association" "collaborator" {
 }
 
 resource "aws_instance" "collaborator" {
-  ami = "${data.aws_ami.ubuntu.id}"
+  #ami = "${data.aws_ami.ubuntu22.id}"
+  # hardcoded arm
+  ami = "ami-0a24e6e101933d294"
   instance_type = "${var.instance_type}"
   key_name = "${aws_key_pair.key.key_name}"
   tags = { "Name" = "collab name" }
@@ -66,7 +67,7 @@ provisioner "file" {
 #  }
 
   provisioner "local-exec" {
-    command = "sleep 45 && ansible-galaxy install -r requirements.yml && echo \"[collaborator]\n${aws_instance.collaborator.public_ip} ansible_connection=ssh ansible_ssh_user=ubuntu ansible_ssh_private_key_file=${var.key_name}\" > inventory && ANSIBLE_HOST_KEY_CHECKING=false ansible-playbook -i inventory playbook.yml --extra-vars \"server_hostname=${var.server_name} burp_server_domain=${var.burp_zone}.${var.zone} burp_local_address=${aws_instance.collaborator.private_ip} burp_public_address=${data.aws_eip.collaborator.public_ip}\""
+    command = "sleep 80 && ansible-galaxy install -r requirements.yml && echo \"[collaborator]\n${aws_instance.collaborator.public_ip} ansible_connection=ssh ansible_ssh_user=ubuntu ansible_ssh_private_key_file=${var.key_name}\" > inventory && ANSIBLE_HOST_KEY_CHECKING=false ansible-playbook -i inventory playbook.yml --extra-vars \"server_hostname=${var.server_name} burp_server_domain=${var.burp_zone}.${var.zone} burp_local_address=${aws_instance.collaborator.private_ip} burp_public_address=${data.aws_eip.collaborator.public_ip}\""
   }
 
 
@@ -236,8 +237,8 @@ resource "aws_route53_record" "a" {
   name    = "${var.burp_zone}.${var.zone}"
   type    = "A"
   ttl     = "60"
-  #records = ["${data.aws_eip.collaborator.public_ip}"]
   records = ["${aws_instance.collaborator.public_ip}"]
+  #records = ["${data.aws_eip.collaborator.public_ip}"]
 }
 
 resource "aws_route53_record" "ns" {
